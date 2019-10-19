@@ -1,0 +1,48 @@
+select nom from etudiant;
+select * from etudiant;
+select * from etudiant where groupe='G1';
+select * from Cours where groupe='G2' and idi=2;
+select * from Cours where groupe='G2' and idi>1;
+select * from Cours where groupe='G2' and idi<>2;
+select * from Cours where groupe='G2' or idi=2;
+select nom,prenom from etudiant where groupe in ('G1','G2');
+select nom,prenom from etudiant where groupe like '%1'; -- % replaces any character sequence
+select nos,groupe from cours where phor like 'P%';
+select dates from cours where nos like '___7'; -- each _ replaces a character
+
+select nom,prenom from etudiant where ide>115 and ide<118;
+select nom,prenom from etudiant where ide between 115 and 118;
+select nom,prenom from etudiant where nom <> 'White';
+
+INSERT INTO Etudiant VALUES (122, 'Maximus', 'fy', 'G3');
+select distinct nom from etudiant;  --display nom but repeated nom is only displayed once
+delete from Etudiant where ide=122;
+
+select groupe as team from etudiant;  --rename 'groupe' as 'team' temporarily and display this column
+
+select nom,prenom from etudiant order by nom desc ;
+select nom,prenom from etudiant order by nom asc ;
+
+select max(note) from evaluation;
+select min(note) from evaluation;
+select avg(note) from evaluation;
+select sum(note) from evaluation;
+select count(note) from evaluation where note>13 and note<16;
+
+--Union:
+select ide from etudiant where nom='White' union select ide from evaluation where note=15;
+
+--Intersection:
+select ide from etudiant where groupe='G1' intersect select ide from evaluation where note<17 and note>13;
+
+--Difference:
+select ide from etudiant where groupe='G1' except select ide from evaluation where note<17 and note>13;
+
+--Joint
+select nom,prenom from etudiant where ide in (select ide from evaluation where note=15 and idm=12);
+select distinct nom,prenom from Evaluation Eva, Etudiant Etu where Eva.ide=Etu.ide and note>12 and note<15;
+
+--subTable
+select groupe, count(*) from etudiant group by groupe;
+select groupe, count(*) from etudiant where groupe='G3' group by groupe;
+

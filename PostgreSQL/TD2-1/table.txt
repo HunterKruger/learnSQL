@@ -1,0 +1,61 @@
+
+create DATABASE yuanfeng_database;
+
+drop table if exists Cours;
+drop table if exists Etudiant;
+drop table if exists Evaluation;
+drop table if exists Intervenant;
+drop table if exists Matiere;
+drop table if exists Salle;
+
+create table Matiere(
+  idm integer primary key,
+  intitule char(16)  ,
+  nbs integer
+);
+create table Intervenant(
+  idi integer primary key,
+  nom varchar(16)  ,
+  prenom varchar(14),
+  statut char(1)
+     constraint ck_statut
+     check (statut IN ('P','V'))
+);
+create table Etudiant(
+  ide integer primary key,
+  nom varchar(16)  ,
+  prenom varchar(14),
+  groupe char(2)
+     constraint ck_groupe
+     check (groupe in ('G1','G2','G3'))
+);
+create table Salle(
+  nos varchar(5) primary key ,
+  typs smallint
+     constraint ck_typs
+     check (typs in ('1','2')),
+  contenance integer
+);
+create table Cours(
+  idm integer not null ,
+     constraint fk_idm foreign key (idm) references Matiere(idm),
+  nums integer,
+  idi integer not null ,
+     constraint fk_idi foreign key (idi) references Intervenant(idi),
+  constraint pk_Cours primary key (idm,nums,idi),
+  nos varchar(5),
+     constraint fk_nos foreign key (nos) references Salle(nos),
+  groupe char(2)  ,
+  dates date,
+  phor char(2)
+     constraint ck_phor
+     check (phor in ('AM','PM'))
+);
+create table Evaluation(
+  idm integer not null,
+     constraint fk_idm foreign key (idm) references Matiere(idm),
+  ide integer not null,
+     constraint fk_ide foreign key (ide) references Etudiant(ide),
+  constraint pk_Evaluation primary key (idm,ide),
+  note float
+);

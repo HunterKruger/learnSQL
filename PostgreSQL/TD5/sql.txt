@@ -1,0 +1,105 @@
+--1. Indiquez la note maximale obtenue par étudiant, et rendue par intervenant et par matière en
+--n’écrivant qu’une seule requête pour cela.
+
+select  max(note),ide,EV.idm,idi
+from evaluation EV
+inner join Cours C on EV.idm=C.idm
+group by grouping sets (ide,idi,EV.idm);
+
+--2. Dans quelle(s) salle(s) (déterminée par nos et contenance) s’est / se sont déroulée(s) le plus
+--de séances de cours ?
+with T1(nos,nb_seance) as
+  (select nos,count(*) as nb_seance
+    from cours
+    group by nos)
+select T1.nos,contenance
+from Salle S, T1
+where T1.nos=S.nos and nb_seance=(select max(nb_seance) from T1);
+
+--3. Donnez le classement des cinq meilleurs étudiants de la promo en affichant également leurs
+--noms et moyennes obtenues.
+with T1(nom,note_avg) as
+    (
+      select e.nom, avg(ev.note) as note_avg
+      from evaluation ev,etudiant e
+      where ev.ide=e.ide
+      group by e.ide
+      order by note_avg desc
+    )
+select T1.nom, T1.note_avg
+FROM T1
+limit 5;
+
+--4. Quels sont les noms et statuts des intervenants qui ont assuré toutes les séances recensées de
+--cours de chaque matière ?
+with T1 (idi, idm, nb) as
+    (
+     select i.idi, c.idm, count(*) as nb
+     from intervenant i, cours c
+     where i.idi = c.idi
+     group by (i.idi, c.idm)
+    )
+select nom, statut
+from intervenant i, matiere m, cours c, T1
+where i.idi = T1.idi and m.idm = T1.idm
+group by (T1.nb, i.idi)
+having max(c.nums) = T1.nb;
+
+--5. Pour chaque salle de contenance supérieure ou égale à 20, indiquez le nombre de cours
+--qu’elle a accueillis (0 en cas d’aucun cours).
+select C.nos,count(C.nos)
+from Cours C , Salle S
+where C.nos=S.nos and S.contenance>=20
+group by C.nos;
+
+--6. Ajoutez 4 points à l’ensemble des notes obtenues, tout en limitant à 20 les notes dépassant
+--cette barre après mise à jour. Pensez à rétablir la base de données dans son état initial à la fin de l’exercice.
+update Evaluation set note=(case when note<=16 then note+4 else 20 end);
+
+
+--1. Pendant quel(s) jour(s) et plage(s) horaire(s) associée(s) n’y a-t-il jamais eu strictement plus
+--de deux matières distinctes d’enseignées ?  哪一天哪个时段的课程种类数目不超过2？
+create or replace view vue1(jour,horaire) as
+select dates,phor
+from cours
+group by dates,phor
+having count(distinct idm)<=2;
+select * from vue1;
+
+
+--2. Donnez les noms et statuts des intervenants qui ont « délivré » une moyenne strictement
+--supérieure à 13.5 / 20 à au moins un groupe d’étudiants auxquels ils ont enseigné.
+create or replace view vue2(nom,statut) as
+with T1(moyen,idi,groupe) as
+  (
+   select avg(ev.note),c.idi,c.groupe
+   from evaluation ev,cours c
+   where c.idm=ev.idm
+   group by c.idi, c.groupe
+  )
+select i.nom,i.statut
+from intervenant i , T1
+where T1.moyen>13.5 and i.idi=T1.idi;
+select *
+from vue2;
+;
+
+--3. A quelle(s) date(s) n’y a-t-il jamais eu six cours ou plus ?
+create or replace view vue3(jours) as
+select dates
+from cours
+group by dates
+having count(*)<6;
+select *
+from vue3;
+
+--4. Donnez les noms des intervenants et des matières qu’ils ont enseignées lorsque ces
+--intervenants ont effectué deux séances de cours ou plus dans ces matières.
+create or replace view vue4(nom,matiere) as
+select i.nom,m.intitule
+from Intervenant i ,Matiere m,Cours c
+where i.idi=c.idi and m.idm=c.idm
+group by i.nom,m.intitule
+having count(nums)>=2;
+select *
+from vue4;

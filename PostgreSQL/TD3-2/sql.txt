@@ -1,0 +1,90 @@
+--1.Donnez le nom et le groupe d’appartenance des étudiants qui ont obtenu deux notes ou plus
+-- supérieures ou égales à 13 (sur 20) pour l’ensemble de leurs évaluations.
+select e.nom, e.groupe
+from Etudiant e, Evaluation ev
+where e.ide=ev.ide and note>=13
+group by e.ide
+having count(note)>=2;
+
+select nom,groupe from etudiant where ide in
+            (select ide from Evaluation where note>=13 group by ide having count(note)>=2)
+
+--2.Pour la journée du 02/09/2021, donnez pour chaque intitulé de matière planifiée et par plage
+--horaire le nombre d’étudiants ayant suivi ces cours.
+select m.intitule,c.phor, count(distinct e.ide) as nb_etu
+from  matiere M, Cours C, Etudiant e
+where C.dates='2021-9-2' and C.idm=M.idm and c.groupe=e.groupe
+group by M.idm,c.phor;
+
+--3.Affichez le(s) groupe(s) d’étudiants qui ont suivi toutes les séances de C++.
+with t(groupe,maxSeance) as
+    (
+     select C.groupe, max(C.nums) as maxSeance
+     from Cours c, Matiere m
+     where c.idm=m.idm and m.intitule='C++'
+     group by c.groupe
+    )
+select t.groupe
+from t
+where t.maxSeance
+       in (select max(nums) from cours c, Matiere m where c.idm=m.idm and m.intitule='C++');
+
+--4. Quels sont les noms des intervenants qui ont donné deux notes ou plus strictement
+--supérieures à 15 (sur 20) dans leurs évaluations ?
+with N (nom, note) as
+    (select i.nom, note
+    from intervenant i, cours c, evaluation ev
+    where i.idi = c.idi and ev.idm = c.idm
+    group by (i.nom, note))
+select nom
+from N
+where note > 15
+group by nom
+having count(note) >= 2;
+
+--5. Donnez les noms et prénoms des étudiants qui ont suivi deux séances ou plus de cours de
+--C++ ou de PHP ?
+
+select nom, prenom from etudiant
+where groupe in(
+    select c.groupe from matiere m, cours c
+    where c.idm = m.idm and intitule = 'C++'
+    group by c.groupe
+    having max(nums) >= 2
+    union
+    select c.groupe from matiere m, cours c
+    where c.idm = m.idm and intitule = 'PHP'
+    group by c.groupe
+    having max(nums) >= 2
+               );
+
+--6. Affichez, par intitulé de matière et par groupe d’étudiants, le pourcentage des séances déjà
+--réalisées.
+select M.intitule, C.groupe, 100*(max(C.nums))/M.nbs as percentage
+from  matiere M, Cours C
+where  M.idm=C.idm
+group by M.intitule, M.nbs, C.groupe;
+
+--7. Quel est le groupe d’étudiants qui a suivi le moins de séances de cours (au sens
+--« cumulées » du terme) ?
+with N(groupe,seance) as
+    (select C.groupe, count(C.groupe) as seance
+    from Cours C
+    group by C.groupe)
+select groupe
+from N
+where seance=(select min(seance) from N);
+
+--8. Quelle est l’intitulé de la ou des matières qui a / ont été la / les plus enseignée(s) dans la ou
+--les salles « Informatique » de capacité maximale ?
+
+with N(nos,idm,nb_intitule) as
+  (
+    select S.nos, C.idm, count(idm) as nb_intitule
+    from Salle S, cours C
+    where S.nos=C.nos and contenance = (select max(contenance) from salle where typs = 1)
+    group by C.idm,S.nos
+  )
+select M.intitule
+from Matiere M
+where idm in (select idm from N where nb_intitule=(select max(nb_intitule) from N))

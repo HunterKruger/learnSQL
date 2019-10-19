@@ -1,0 +1,33 @@
+-- Dans un premier temps, proposez dans une même transaction une altération de la base de données
+-- (avec une suppression suivie du remplacement d’une contrainte) permettant la suppression « en cascade »,
+-- selon sa clef primaire, de tuples de la relation Etudiant.
+ALTER TABLE Convention DROP CONSTRAINT fk_etu;
+
+ALTER TABLE Convention ADD CONSTRAINT fk_etu FOREIGN KEY(ide) REFERENCES Etudiant(ide)
+ON DELETE CASCADE;
+
+--effacez les enregistrements d’étudiants en troisième année ayant obtenus une note de stage
+--en entreprise supérieure à 12 / 20 (car ils ont terminés leur études) ;
+DELETE FROM Etudiant
+WHERE annee = 3 and ide IN(SELECT ide FROM Convention WHERE note>=12);
+
+--incrémentez de un l’année des étudiants ayant obtenus une note de stage en entreprise
+--supérieure à 12 / 20.
+update Etudiant set annee=annee+1 where ide in(select idi from Convention where note>12);
+
+--Créez un utilisateur « test » initialement en lecture seule
+-- (la création d’utilisateurs et de rôles SQL ne faisant pas l’objet de cet enseignement,
+-- vous pouvez le faire depuis l’interface d’administration de l’hébergement de votre SGBDR).
+CREATE user test ;
+drop user test;
+--de mise à jour et de suppression sur la relation Etudiant
+grant update , delete on etudiant to test;
+revoke update , delete on etudiant from test;
+--de suppression sur la relation Societe
+grant delete on etudiant to test;
+revoke delete on Etudiant from test ;
+
+--En prenant compte des requêtes du TD3-1 : Langage de manipulation de données (LMD),
+--ajoutez les index qui vous semble judicieux à la base de données.
+drop index if exists idx_nom;
+create index idx_nom on Etudiant(nom);

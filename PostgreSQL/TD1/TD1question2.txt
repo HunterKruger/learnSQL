@@ -1,0 +1,29 @@
+Cet exercice porte sur une agence immobilière qui assure la gestion et la location 
+de biens que lui confient des propriétaires.
+Définissez précisément les objectifs de l‘application avant de proposer le MCD 
+correspondant et de le traduire pour obtenir le schéma relationnel.
+L’agence immobilière doit gérer essentiellement des informations sur les propriétaires, 
+les locataires, les appartements et opérer l’encaissement des loyers.
+Une tâche importante est de pouvoir, lorsqu'un client se présente, lui proposer 
+l'ensemble des appartements vacants répondant à ses critères de choix 
+(par exemple : type, localisation, loyer). De plus à chaque date d’échéance, 
+il faut envoyer un courrier de demande de règlement du loyer à chaque locataire 
+et pouvoir le relancer si le loyer n’est pas réglé.
+Toute personne, qu’elle soit propriétaire et/ou locataire se voit attribuer un 
+identifiant unique. On conservera de plus leur nom, prénom et numéro de téléphone.
+Concernant les appartements, il faut connaître leur catégorie 
+(appartement, maison de ville, villa, etc.), leur type (Studio, F2, F3, etc.), 
+leur adresse postale, leur ville, leur surface, leur loyer. Il faut également
+pouvoir retrouver le montant des charges. Ce montant est calculé en appliquant 
+un certain coefficient au loyer. Ce coefficient est défini en fonction uniquement 
+de la ville et de la surface de l’appartement.
+
+本练习的重点是管理和租赁业主委托给它的财产的房地产中介。
+在提出相应的CDM并将其翻译以获得关系模式之前，精确定义应用程序的目标。
+房地产中介必须主要管理业主，租户，公寓的信息，并经营租金收集。
+一个重要的任务是，当顾客出席时，能够向他提出与他的选择标准相对应的所有空置单位（
+例如：类型，位置，租金）。此外，在每个截止日期，您必须向每个租户发送租赁请求信，并且如果未支付租金，则可以重新启动。
+无论是所有者还是租户，任何人都被分配了唯一的标识符。我们还会保留他们的姓氏，名字和电话号码。
+关于公寓，您需要知道他们的类别（公寓，联排别墅，别墅等），他们的类型（工作室，F2，F3等），
+他们的邮政地址，他们的城市，他们的表面，他们的租金。还必须能够找到电荷量。该金额是通过对租金应用某个系数来计算的。
+该系数仅根据城市和公寓的表面来定义。

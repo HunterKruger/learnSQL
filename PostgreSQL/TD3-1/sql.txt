@@ -1,0 +1,73 @@
+--1.Donnez le nom et le salaire des employés dont le prénom contient la chaîne de caractères« en ».
+-- Affichez le résultat dans l’ordre lexicographique des noms.
+select nom,salaire from personnel where prenom ~'en' order by nom asc;
+select nom,salaire from personnel where prenom like '%en%' order by nom asc;
+
+--2.Quelle est la durée moyenne des (conventions de) stages en entreprise dont la notation s'est
+-- soldée par une note supérieure ou égale à 12 (sur 20) ?
+select avg(duree) from convention where note>=12;
+
+--3.Pour chaque note de stage en entreprise, donnez les durées moyenne, minimale et maximale
+-- des stages en entreprise.
+select note, avg(duree) as duree_moyenne, min(duree) as duree_min, max(duree) as duree_max from convention group by note;
+
+--4.Pour chaque durée de stage en entreprise existante, donnez le nombre d’étudiants différents
+-- associé.
+select duree, count(distinct (ide)) as nb_etudiants from convention where duree is not null group by duree;
+
+--5.Quels sont les intitulés des conventions de stages en entreprise des étudiants prénommés « Lulu » et
+-- telles que les tuteurs d'entreprise associés aient un salaire d'au moins 2400 ?
+
+select intitule from Convention C, Personnel P, Etudiant E
+     where P.idp=C.idp and P.salaire>=2400 and E.ide= C.ide and E.prenom='Lulu';
+
+select intitule from convention where ide in (select ide from etudiant where prenom='Lulu')
+     and idp in (select idp from personnel where salaire>=2400);
+
+select intitule from convention inner join Etudiant E on Convention.ide = E.ide
+                                inner join personnel P on Convention.idp = P.idp
+     where E.prenom='Lulu' and P.salaire>=2400;
+
+--6.Quels sont les prénoms des employés appartenant à des sociétés
+-- qui ont signé des conventions de stage en entreprise avec deux étudiants ou plus ?
+select prenom from personnel where ids in
+                                   (select ids from convention group by ids HAVING count(distinct (ide))>=2);
+
+--7.Donnez les nom, prénom, et âge des étudiants ayant réalisé des stages en entreprise
+-- dans (strictement) plus d’une société.
+select nom, prenom, date_part('year', age(daten)) as age from etudiant
+     where ide in (select ide from convention group by ide having count(ids)>1);
+
+--8.Donnez les nombres d’étudiants qui ont effectué leur stage en entreprise dans des sociétés de type « SARL »,
+-- dans des sociétés de type « SA », ainsi que dans des sociétés de type « Autres ».
+select count(distinct(ide)) as nb_etudiant_SARL from convention
+             where ids in ( select ids from Societe where raisons='SARL');
+select count(distinct(ide)) as nb_etudiant_SA from convention
+             where ids in ( select ids from Societe where raisons='SA');
+select count(distinct(ide)) as nb_etudiant_Autre from convention
+             where ids in ( select ids from Societe where raisons<>'SA' and raisons<>'SARL');
+
+select case raisons
+    when 'SARL' then 'SARL'
+    when 'SA' then 'SA'
+    when 'SEM' then 'Autres'
+end as typesoc,
+count (distinct ide) as nb_etudient
+from societe s inner join convention c on s.ids=c.ids GROUP BY raisons;
+
+--9.Quels sont les nom et l’année d’inscription des étudiants qui ont obtenu une note pour leur stage
+-- en entreprise différente de celle obtenue par tous les étudiants nommés « Dupond » ?
+
+select nom ,annee from etudiant
+    where ide in(
+        select ide from convention
+        where note <> all(
+            select note from convention
+            where ide in(
+                select ide from etudiant
+                where nom='Dupond'
+            )
+        )
+    )
+
+
